@@ -61,8 +61,9 @@ public class Scanner {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (nChar == -1) {
+            if (nChar == -1 || nChar == '.') {
                 eof = true;
+                currentChar = (char) -1;
             } else {
                 currentChar = (char) nChar;
             }
@@ -106,7 +107,14 @@ public class Scanner {
             eat(currentChar);
         }
 
-        if (!hasNext()) {
+        if (currentChar == '/') {
+            boolean isComment = scanComment();
+            if (!isComment) {
+                return "/";
+            }
+        }
+
+        if (eof) {
             return "END";
         }
 
@@ -118,7 +126,11 @@ public class Scanner {
             return scanIdentifier();
         }
 
-        return scanOperand();
+        if (isOperand(currentChar)) {
+            return scanOperand();
+        }
+
+        return scanSpecialChar();
     }
 
     /**
@@ -136,7 +148,7 @@ public class Scanner {
         }
 
         if (sb.length() == 0) {
-            throw new ScanErrorException("Unrecognized character");
+            throw new ScanErrorException("Unrecognized Character");
         }
 
         return sb.toString();
@@ -156,7 +168,7 @@ public class Scanner {
             sb.append(currentChar);
             eat(currentChar);
         } else {
-            throw new ScanErrorException("Unrecognized character");
+            throw new ScanErrorException("Unrecognized Character");
         }
 
         while (isLetter(currentChar) || isDigit(currentChar)) {
@@ -168,22 +180,86 @@ public class Scanner {
     }
 
     /**
+     * Scans the next comment in the input stream, either single-line or block
+     *
+     * @return whether the method has scanned a comment
+     * @throws ScanErrorException if the current character is not a backslash
+     */
+    private boolean scanComment() throws ScanErrorException {
+        if (currentChar != '/') {
+            throw new ScanErrorException("Unrecognized Character");
+        } else {
+            eat(currentChar);
+        }
+
+        if (currentChar == '/') {
+            while (currentChar != '\n' && !eof) {
+                eat(currentChar);
+            }
+
+            while (isWhiteSpace(currentChar)) {
+                eat(currentChar);
+            }
+
+            return true;
+        } else if (currentChar == '*') {
+            eat(currentChar);
+
+            while (true) {
+                if (eof) {
+                    throw new ScanErrorException("Unclosed block comment");
+                }
+
+                if (currentChar == '*') {
+                    eat(currentChar);
+                    if (currentChar == '/') {
+                        break;
+                    }
+                } else {
+                    eat(currentChar);
+                }
+            }
+
+            while (isWhiteSpace(currentChar)) {
+                eat(currentChar);
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Scans the next operand in the input stream
      *
      * @return the next character if it is an operand
      * @throws ScanErrorException if the current character is not an operand
      */
     private String scanOperand() throws ScanErrorException {
-        char[] operands = {'=', '+', '-', '*', '/', '%', '(', ')'};
-
-        for (char op : operands) {
-            if (currentChar == op) {
-                eat(currentChar);
-                return String.valueOf(op);
-            }
+        if (isOperand(currentChar)) {
+            char c = currentChar;
+            eat(currentChar);
+            return String.valueOf(c);
+        } else {
+            throw new ScanErrorException("Unrecognized Character");
         }
+    }
 
-        throw new ScanErrorException("Unrecognized character");
+    /**
+     * Scans the next special character in the input stream
+     *
+     * @return the next character if it is an special character
+     * @throws ScanErrorException if the current character is not an special character
+     */
+    private String scanSpecialChar() throws ScanErrorException {
+        if (isSpecialChar(currentChar)) {
+            char c = currentChar;
+            eat(currentChar);
+            return String.valueOf(c);
+        } else {
+            throw new ScanErrorException("Unrecognized Character");
+        }
     }
 
     /**
@@ -216,5 +292,37 @@ public class Scanner {
      */
     public static boolean isWhiteSpace(char c) {
         return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+    }
+
+    /**
+     * Checks whether the given character is an operand
+     *
+     * @param c the character to check
+     * @return whether c is a operand
+     */
+    public static boolean isOperand(char c) {
+        char[] operands = {'=', '<', '>', '+', '-', '*', '/', '%', '(', ')'};
+        for (char op : operands) {
+            if (c == op) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the given character is a special character
+     *
+     * @param c the character to check
+     * @return whether c is a special character
+     */
+    public static boolean isSpecialChar(char c) {
+        char[] specialChars = {';', '\'', '"', ':', '.'};
+        for (char sc : specialChars) {
+            if (c == sc) {
+                return true;
+            }
+        }
+        return false;
     }
 }
