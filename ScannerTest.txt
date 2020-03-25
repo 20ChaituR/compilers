@@ -1,10 +1,19 @@
-x = x + 3 / 5 - y
-y = z % 5
-    z =    x   + y
-xyzzy       =           303
-  $^)(@
-byte
-  baudy
-    bit
-       and
-           branch
+(408)707-6401
++1(408)821-0720
+
+anu.datar@staff.harker.org
+chaitu@mail.co.uk
+
+500 Saratoga Ave
+500 Saratoga Ave, San Jose
+500 Saratoga Ave, San Jose, CA
+500 Saratoga Ave, San Jose, CA 95051
+
+VAR x;
+x := 351
+x := "Hello World!"
+x := 17.56
+// x := 1 / 2
+6 17 961 9999999009     15   8.7
+.
+x := 50

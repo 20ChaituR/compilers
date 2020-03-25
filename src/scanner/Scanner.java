@@ -1,22 +1,33 @@
+package scanner;
+
 import java.io.*;
 
 /**
- * Scanner is a simple scanner for Compilers and Interpreters (2014-2015)
- * Lab Exercise 1
+ * Scanner is a simple scanner for Compilers and Interpreters. It can scan
+ * individual tokens at a time, skipping whitespace and comments, and has
+ * the ability to scan numbers, ids, operands, and special characters.
  *
  * @author Chaitanya Ravuri
- * @version January 27, 2019
+ * @version January 27, 2020
  *
  * Usage:
  * Create a new Scanner using one of the methods given by the constructors
  * Read tokens using the nextToken() method
  * Check if there are any tokens remaining using the hasNext() method
  */
-public class Scanner {
+public class Scanner
+{
 
     private BufferedReader in; // The input stream
     private char currentChar;  // The character you are currently at
     private boolean eof;       // Whether end of file has been reached
+
+    // The operands that are used in Pascal
+    static private String[] operands = {"+", "-", "*", "/", "mod", "=", ":=", "<>", ">",
+            "<", ">=", "<=", "(", ")"};
+
+    // The special characters that are used in Pascal
+    static private char[] specialChars = {';'};
 
     /**
      * Scanner constructor for construction of a scanner that uses an
@@ -28,7 +39,8 @@ public class Scanner {
      *
      * @param inStream the input stream to use
      */
-    public Scanner(InputStream inStream) {
+    public Scanner(InputStream inStream)
+    {
         in = new BufferedReader(new InputStreamReader(inStream));
         eof = false;
         getNextChar();
@@ -44,7 +56,8 @@ public class Scanner {
      *
      * @param inString the string to scan
      */
-    public Scanner(String inString) {
+    public Scanner(String inString)
+    {
         in = new BufferedReader(new StringReader(inString));
         eof = false;
         getNextChar();
@@ -54,17 +67,26 @@ public class Scanner {
      * Sets currentCharacter to the next character in the input stream. If at
      * the end of file, sets eof to true.
      */
-    private void getNextChar() {
+    private void getNextChar()
+    {
         int nChar = 0;
-        try {
+        try
+        {
             nChar = in.read();
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
-        } finally {
-            if (nChar == -1 || nChar == '.') {
+        }
+        finally
+        {
+            if (nChar == -1 || nChar == '.')
+            {
                 eof = true;
                 currentChar = (char) -1;
-            } else {
+            }
+            else
+            {
                 currentChar = (char) nChar;
             }
         }
@@ -77,10 +99,14 @@ public class Scanner {
      * @param expected the character to match with the current character
      * @throws ScanErrorException if expected doesn't match with currentChar
      */
-    private void eat(char expected) throws ScanErrorException {
-        if (expected == currentChar) {
+    private void eat(char expected) throws ScanErrorException
+    {
+        if (expected == currentChar)
+        {
             getNextChar();
-        } else {
+        }
+        else
+        {
             throw new ScanErrorException("Illegal character - Expected " +
                     expected + " and found " + currentChar);
         }
@@ -91,7 +117,8 @@ public class Scanner {
      *
      * @return whether there are any characters remaining in the input stream
      */
-    public boolean hasNext() {
+    public boolean hasNext()
+    {
         return !eof;
     }
 
@@ -102,32 +129,43 @@ public class Scanner {
      *
      * @return the next lexeme in the input stream
      */
-    public String nextToken() throws ScanErrorException {
-        while (isWhiteSpace(currentChar)) {
+    public String nextToken() throws ScanErrorException
+    {
+        while (isWhiteSpace(currentChar))
+        {
             eat(currentChar);
         }
 
-        if (currentChar == '/') {
+        while (currentChar == '/')
+        {
+            eat(currentChar);
             boolean isComment = scanComment();
-            if (!isComment) {
-                return "/";
+            if (!isComment)
+            {
+                return scanOperand("/");
             }
         }
 
-        if (eof) {
+        if (eof)
+        {
             return "END";
         }
 
-        if (isDigit(currentChar)) {
+        if (isDigit(currentChar))
+        {
             return scanNumber();
         }
 
-        if (isLetter(currentChar)) {
+        if (isLetter(currentChar))
+        {
             return scanIdentifier();
         }
 
-        if (isOperand(currentChar)) {
-            return scanOperand();
+        if (isOperand(String.valueOf(currentChar)))
+        {
+            String s = String.valueOf(currentChar);
+            eat(currentChar);
+            return scanOperand(s);
         }
 
         return scanSpecialChar();
@@ -139,15 +177,18 @@ public class Scanner {
      * @return the next number in the input stream
      * @throws ScanErrorException if the current character is not a digit
      */
-    private String scanNumber() throws ScanErrorException {
+    private String scanNumber() throws ScanErrorException
+    {
         StringBuilder sb = new StringBuilder();
 
-        while (isDigit(currentChar)) {
+        while (isDigit(currentChar))
+        {
             sb.append(currentChar);
             eat(currentChar);
         }
 
-        if (sb.length() == 0) {
+        if (sb.length() == 0)
+        {
             throw new ScanErrorException("Unrecognized Character");
         }
 
@@ -161,17 +202,22 @@ public class Scanner {
      * @return the next identifier in the input stream
      * @throws ScanErrorException if the current character is not a letter
      */
-    private String scanIdentifier() throws ScanErrorException {
+    private String scanIdentifier() throws ScanErrorException
+    {
         StringBuilder sb = new StringBuilder();
 
-        if (isLetter(currentChar)) {
+        if (isLetter(currentChar))
+        {
             sb.append(currentChar);
             eat(currentChar);
-        } else {
+        }
+        else
+        {
             throw new ScanErrorException("Unrecognized Character");
         }
 
-        while (isLetter(currentChar) || isDigit(currentChar)) {
+        while (isLetter(currentChar) || isDigit(currentChar))
+        {
             sb.append(currentChar);
             eat(currentChar);
         }
@@ -185,47 +231,56 @@ public class Scanner {
      * @return whether the method has scanned a comment
      * @throws ScanErrorException if the current character is not a backslash
      */
-    private boolean scanComment() throws ScanErrorException {
-        if (currentChar != '/') {
-            throw new ScanErrorException("Unrecognized Character");
-        } else {
-            eat(currentChar);
-        }
-
-        if (currentChar == '/') {
-            while (currentChar != '\n' && !eof) {
+    private boolean scanComment() throws ScanErrorException
+    {
+        if (currentChar == '/')
+        {
+            while (currentChar != '\n' && !eof)
+            {
                 eat(currentChar);
             }
 
-            while (isWhiteSpace(currentChar)) {
+            while (isWhiteSpace(currentChar))
+            {
                 eat(currentChar);
             }
 
             return true;
-        } else if (currentChar == '*') {
+        }
+        else if (currentChar == '*')
+        {
             eat(currentChar);
 
-            while (true) {
-                if (eof) {
+            while (true)
+            {
+                if (eof)
+                {
                     throw new ScanErrorException("Unclosed block comment");
                 }
 
-                if (currentChar == '*') {
+                if (currentChar == '*')
+                {
                     eat(currentChar);
-                    if (currentChar == '/') {
+                    if (currentChar == '/')
+                    {
                         break;
                     }
-                } else {
+                }
+                else
+                {
                     eat(currentChar);
                 }
             }
 
-            while (isWhiteSpace(currentChar)) {
+            while (isWhiteSpace(currentChar))
+            {
                 eat(currentChar);
             }
 
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
@@ -236,14 +291,24 @@ public class Scanner {
      * @return the next character if it is an operand
      * @throws ScanErrorException if the current character is not an operand
      */
-    private String scanOperand() throws ScanErrorException {
-        if (isOperand(currentChar)) {
-            char c = currentChar;
+    private String scanOperand(String prev) throws ScanErrorException
+    {
+        if (isOperand(prev + currentChar))
+        {
+            String s = prev + currentChar;
             eat(currentChar);
-            return String.valueOf(c);
-        } else {
-            throw new ScanErrorException("Unrecognized Character");
+            return scanOperand(s);
         }
+
+        for (String op : operands)
+        {
+            if (prev.equals(op))
+            {
+                return prev;
+            }
+        }
+
+        throw new ScanErrorException("Unrecognized Character");
     }
 
     /**
@@ -252,12 +317,16 @@ public class Scanner {
      * @return the next character if it is an special character
      * @throws ScanErrorException if the current character is not an special character
      */
-    private String scanSpecialChar() throws ScanErrorException {
-        if (isSpecialChar(currentChar)) {
+    private String scanSpecialChar() throws ScanErrorException
+    {
+        if (isSpecialChar(currentChar))
+        {
             char c = currentChar;
             eat(currentChar);
             return String.valueOf(c);
-        } else {
+        }
+        else
+        {
             throw new ScanErrorException("Unrecognized Character");
         }
     }
@@ -268,7 +337,8 @@ public class Scanner {
      * @param c the character to check
      * @return whether c is a digit
      */
-    public static boolean isDigit(char c) {
+    public static boolean isDigit(char c)
+    {
         return '0' <= c && c <= '9';
     }
 
@@ -279,7 +349,8 @@ public class Scanner {
      * @param c the character to check
      * @return whether c is a letter
      */
-    public static boolean isLetter(char c) {
+    public static boolean isLetter(char c)
+    {
         return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
     }
 
@@ -290,20 +361,23 @@ public class Scanner {
      * @param c the character to check
      * @return whether c is whitespace
      */
-    public static boolean isWhiteSpace(char c) {
+    public static boolean isWhiteSpace(char c)
+    {
         return c == ' ' || c == '\t' || c == '\r' || c == '\n';
     }
 
     /**
-     * Checks whether the given character is an operand
+     * Checks whether the given string is an operand
      *
-     * @param c the character to check
-     * @return whether c is a operand
+     * @param s the string to check
+     * @return whether s is a operand
      */
-    public static boolean isOperand(char c) {
-        char[] operands = {'=', '<', '>', '+', '-', '*', '/', '%', '(', ')'};
-        for (char op : operands) {
-            if (c == op) {
+    public static boolean isOperand(String s)
+    {
+        for (String op : operands)
+        {
+            if (s.length() <= op.length() && s.equals(op.substring(0, s.length())))
+            {
                 return true;
             }
         }
@@ -316,10 +390,12 @@ public class Scanner {
      * @param c the character to check
      * @return whether c is a special character
      */
-    public static boolean isSpecialChar(char c) {
-        char[] specialChars = {';', '\'', '"', ':', '.'};
-        for (char sc : specialChars) {
-            if (c == sc) {
+    public static boolean isSpecialChar(char c)
+    {
+        for (char sc : specialChars)
+        {
+            if (c == sc)
+            {
                 return true;
             }
         }

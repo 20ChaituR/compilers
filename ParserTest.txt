@@ -1,0 +1,3 @@
+READLN(x);
+WRITELN(5 mod x);
+.
