@@ -1,31 +1,33 @@
 package parser;
 
+import ast.Number;
+import ast.*;
 import scanner.ScanErrorException;
 import scanner.Scanner;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 import static scanner.Scanner.isDigit;
 
 /**
  * The Parser class provides a simple parser for Compilers and Interpreters. It
  * currently has the ability to do basic arithmetic, read from the user, write
- * to the console, and store variables. The language it parses is Pascal.
+ * to the console, store variables, do conditionals, and execute loops. The language
+ * it parses is Pascal.
  *
  * @author Chaitanya Ravuri
- * @version March 5, 2020
+ * @version March 25, 2020
  *
  * Usage:
  * Create a new Parser by passing a Scanner object
- * Read and execute a statement with the parseStatement() method
+ * Read and generate an AST with the parseStatement() method
+ * Execute that AST using the exec() method
  */
 public class Parser
 {
 
     private Scanner sc;                         // Used to read tokens from the input program
     private String curToken;                    // The current token that the parser is on
-    private Map<String, Object> variableMap;    // The map of variable names to their values
 
     private java.util.Scanner consoleIn;        // Used to read user input from console
 
@@ -50,7 +52,6 @@ public class Parser
         {
             e.printStackTrace();
         }
-        variableMap = new HashMap<>();
         consoleIn = new java.util.Scanner(System.in);
     }
 
@@ -112,32 +113,32 @@ public class Parser
      * Parses the next factor in the token stream, consisting of
      * either a positive or negative number, with parentheses
      *
-     * @return the simplified value of the factor
+     * @return the AST representation of the factor
      */
-    private int parseFactor()
+    private Expression parseFactor()
     {
         if ("(".equals(curToken))
         {
             eat("(");
-            int num = parseExpr();
+            Expression exp = parseExpr();
             eat(")");
-            return num;
+            return exp;
         }
         else if ("-".equals(curToken))
         {
             eat("-");
-            int num = parseFactor();
-            return -num;
+            Expression exp = parseFactor();
+            return new BinOp("-", new Number(0), exp);
         }
         else
         {
             if (isDigit(curToken.charAt(0)))
             {
-                return parseNumber();
+                return new Number(parseNumber());
             }
             else
             {
-                return (int) variableMap.get(parseID());
+                return new Variable(parseID());
             }
         }
     }
@@ -147,11 +148,11 @@ public class Parser
      * consists of factors multiplied, divided, or modded
      * together
      *
-     * @return the simplified value of the term
+     * @return the AST representation of the term
      */
-    private int parseTerm()
+    private Expression parseTerm()
     {
-        int factor = parseFactor();
+        Expression factor = parseFactor();
         return parseWhileTerm(factor);
     }
 
@@ -159,30 +160,33 @@ public class Parser
      * Helper method for parseTerm(). Used to parse a series
      * of operations that are right recursive.
      *
-     * @param factor the previous factor in the term, used to calculate the total value
-     * @return the result of the multiplication, division, and modding
+     * @param prevTerm the previous factor in the term, used to find the complete AST
+     * @return the AST for the term up to the current token
      */
-    private int parseWhileTerm(int factor)
+    private Expression parseWhileTerm(Expression prevTerm)
     {
-        while ("*".equals(curToken) || "/".equals(curToken) || "mod".equals(curToken))
+        if ("*".equals(curToken))
         {
-            if ("*".equals(curToken))
-            {
-                eat("*");
-                factor *= parseFactor();
-            }
-            else if ("/".equals(curToken))
-            {
-                eat("/");
-                factor /= parseFactor();
-            }
-            else
-            {
-                eat("mod");
-                factor %= parseFactor();
-            }
+            eat("*");
+            Expression curTerm = new BinOp("*", prevTerm, parseFactor());
+            return parseWhileTerm(curTerm);
         }
-        return factor;
+        else if ("/".equals(curToken))
+        {
+            eat("/");
+            Expression curTerm = new BinOp("/", prevTerm, parseFactor());
+            return parseWhileTerm(curTerm);
+        }
+        else if ("mod".equals(curToken))
+        {
+            eat("mod");
+            Expression curTerm = new BinOp("mod", prevTerm, parseFactor());
+            return parseWhileTerm(curTerm);
+        }
+        else
+        {
+            return prevTerm;
+        }
     }
 
     /**
@@ -190,11 +194,11 @@ public class Parser
      * consisting of a series of terms added or subtracted
      * together
      *
-     * @return the result of the operations
+     * @return the AST representation of the expression
      */
-    private int parseExpr()
+    private Expression parseExpr()
     {
-        int term = parseTerm();
+        Expression term = parseTerm();
         return parseWhileExpr(term);
     }
 
@@ -203,61 +207,96 @@ public class Parser
      * right recursive, and is able to parse a series of additions
      * and subtractions.
      *
-     * @param term the previous term in the expression
-     * @return the result of the operations
+     * @param prevExpr the previous term in the expression
+     * @return the AST for the expression up to the current token
      */
-    private int parseWhileExpr(int term)
+    private Expression parseWhileExpr(Expression prevExpr)
     {
-        while ("+".equals(curToken) || "-".equals(curToken))
+        if ("+".equals(curToken))
         {
-            if ("+".equals(curToken))
-            {
-                eat("+");
-                term += parseTerm();
-            }
-            else
-            {
-                eat("-");
-                term -= parseTerm();
-            }
+            eat("+");
+            Expression curExpr = new BinOp("+", prevExpr, parseTerm());
+            return parseWhileTerm(curExpr);
         }
-        return term;
+        else if ("-".equals(curToken))
+        {
+            eat("-");
+            Expression curExpr = new BinOp("-", prevExpr, parseTerm());
+            return parseWhileTerm(curExpr);
+        }
+        else
+        {
+            return prevExpr;
+        }
+    }
+
+    /**
+     * Parses the next condition in the input stream. A
+     * condition consists of an expression, followed by a
+     * relop, followed by another expression.
+     *
+     * @return the AST representation of the condition
+     */
+    private Condition parseCondition()
+    {
+        Expression exp1 = parseExpr();
+        String relop;
+        if (curToken.equals("=") || curToken.equals("<>") || curToken.equals("<") ||
+                curToken.equals(">") || curToken.equals("<=") || curToken.equals(">="))
+        {
+            relop = curToken;
+            eat(curToken);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Expected a boolean operator, but found " + curToken);
+        }
+        Expression exp2 = parseExpr();
+        return new Condition(relop, exp1, exp2);
     }
 
     /**
      * Helper method for parseStatement(). Used to make
      * parsing a series of BEGIN and END statements right
      * recursive.
+     *
+     * @return the AST representation of the block statement
      */
-    private void parseWhileBegin()
+    private Block parseWhileBegin()
     {
         if ("END".equals(curToken))
         {
             eat("END");
             eat(";");
+            return new Block(new ArrayList<>());
         }
         else
         {
-            parseStatement();
-            parseWhileBegin();
+            Statement stmt = parseStatement();
+            Block blck = parseWhileBegin();
+            blck.getStmts().add(0, stmt);
+            return blck;
         }
     }
 
     /**
-     * Parses and runs any statement consisting of variable
-     * assignments, expressions using numbers or those variables,
-     * reading from input, and writing to output.
+     * Parses and returns the AST representation of any statement
+     * consisting of variable assignments, expressions using numbers
+     * or those variables, reading from input, writing to output,
+     * if conditions, and while loops.
+     *
+     * @return the AST representation of the full statement
      */
-    public void parseStatement()
+    public Statement parseStatement()
     {
         if ("WRITELN".equals(curToken))
         {
             eat("WRITELN");
             eat("(");
-            int num = parseExpr();
+            Expression exp = parseExpr();
             eat(")");
             eat(";");
-            System.out.println(num);
+            return new Writeln(exp);
         }
         else if ("READLN".equals(curToken))
         {
@@ -268,20 +307,36 @@ public class Parser
             eat(";");
             System.out.println("Enter a number: ");
             int val = consoleIn.nextInt();
-            variableMap.put(id, val);
+            return new Readln(id, val);
         }
         else if ("BEGIN".equals(curToken))
         {
             eat("BEGIN");
-            parseWhileBegin();
+            return parseWhileBegin();
+        }
+        else if ("IF".equals(curToken))
+        {
+            eat("IF");
+            Condition cond = parseCondition();
+            eat("THEN");
+            Statement stmt = parseStatement();
+            return new If(cond, stmt);
+        }
+        else if ("WHILE".equals(curToken))
+        {
+            eat("WHILE");
+            Condition cond = parseCondition();
+            eat("DO");
+            Statement stmt = parseStatement();
+            return new While(cond, stmt);
         }
         else
         {
-            String id = parseID();
+            String var = parseID();
             eat(":=");
-            int val = parseExpr();
+            Expression exp = parseExpr();
             eat(";");
-            variableMap.put(id, val);
+            return new Assignment(var, exp);
         }
     }
 

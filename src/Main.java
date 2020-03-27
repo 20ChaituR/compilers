@@ -2,11 +2,13 @@
  * Created by cravuri on 1/27/20
  */
 
+import environment.Environment;
 import parser.Parser;
 import scanner.Scanner;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class Main
 {
@@ -16,9 +18,11 @@ public class Main
         Scanner lex = new Scanner(new FileInputStream("ParserTest.txt"));
         Parser p = new Parser(lex);
 
+        Environment mainEnv = new Environment(new HashMap<>());
+
         while (lex.hasNext())
         {
-            p.parseStatement();
+            p.parseStatement().exec(mainEnv);
         }
     }
 
