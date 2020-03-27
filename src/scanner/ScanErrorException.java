@@ -12,7 +12,7 @@ package scanner;
 public class ScanErrorException extends Exception
 {
     /**
-     * default constructor for ScanErrorObjects
+     * Default constructor for ScanErrorObjects
      */
     public ScanErrorException()
     {
@@ -21,8 +21,6 @@ public class ScanErrorException extends Exception
 
     /**
      * Constructor for ScanErrorObjects that includes a reason for the error
-     *
-     * @param reason
      */
     public ScanErrorException(String reason)
     {
