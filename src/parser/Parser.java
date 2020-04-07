@@ -6,21 +6,22 @@ import scanner.ScanErrorException;
 import scanner.Scanner;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static scanner.Scanner.isDigit;
 
 /**
  * The Parser class provides a simple parser for Compilers and Interpreters. It
  * currently has the ability to do basic arithmetic, read from the user, write
- * to the console, store variables, do conditionals, and execute loops. The language
- * it parses is Pascal.
+ * to the console, store variables, do conditionals, execute loops, and declare
+ * and run procedures. The language it parses is Pascal.
  *
  * @author Chaitanya Ravuri
- * @version March 25, 2020
+ * @version April 7, 2020
  *
  * Usage:
  * Create a new Parser by passing a Scanner object
- * Read and generate an AST with the parseStatement() method
+ * Read and generate an AST with the parseProgram() method
  * Execute that AST using the exec() method
  */
 public class Parser
@@ -110,8 +111,10 @@ public class Parser
     }
 
     /**
-     * Parses the next factor in the token stream, consisting of
-     * either a positive or negative number, with parentheses
+     * Parses the next factor in the token stream. A factor
+     * consists of either an expression contained within
+     * parentheses, a positive or negative number, a variable,
+     * or a function call.
      *
      * @return the AST representation of the factor
      */
@@ -138,7 +141,18 @@ public class Parser
             }
             else
             {
-                return new Variable(parseID());
+                String id = parseID();
+                if ("(".equals(curToken))
+                {
+                    eat("(");
+                    List<Expression> args = parseArgs();
+                    eat(")");
+                    return new ProcedureCall(id, args);
+                }
+                else
+                {
+                    return new Variable(id);
+                }
             }
         }
     }
@@ -337,6 +351,92 @@ public class Parser
             Expression exp = parseExpr();
             eat(";");
             return new Assignment(var, exp);
+        }
+    }
+
+    /**
+     * Parses the list of parameters within a function declaration.
+     * This list can have zero or more Strings representing the
+     * parameter names.
+     *
+     * @return the list of parameter names
+     */
+    public List<String> parseParams()
+    {
+        if (curToken.equals(")"))
+        {
+            return new ArrayList<>();
+        }
+        else
+        {
+            List<String> params = new ArrayList<>();
+            while (!curToken.equals(")"))
+            {
+                params.add(parseID());
+                if (curToken.equals(","))
+                {
+                    eat(",");
+                }
+            }
+            return params;
+        }
+    }
+
+    /**
+     * Parses the list of arguments within a function call.
+     * This list can have zero or more Expressions representing
+     * the values of each of the parameters.
+     *
+     * @return the list of arguments
+     */
+    public List<Expression> parseArgs()
+    {
+        if (curToken.equals(")"))
+        {
+            return new ArrayList<>();
+        }
+        else
+        {
+            List<Expression> args = new ArrayList<>();
+            while (!curToken.equals(")"))
+            {
+                args.add(parseExpr());
+                if (curToken.equals(","))
+                {
+                    eat(",");
+                }
+            }
+            return args;
+        }
+    }
+
+    /**
+     * Parses a program, which consists of a series of procedure
+     * declarations, then a statement that is run when the program
+     * is executed.
+     *
+     * @return the AST representation of the program
+     */
+    public Program parseProgram()
+    {
+        if ("PROCEDURE".equals(curToken))
+        {
+            eat("PROCEDURE");
+            String id = parseID();
+            eat("(");
+            List<String> params = parseParams();
+            eat(")");
+            eat(";");
+            Statement stmt = parseStatement();
+            ProcedureDeclaration decl = new ProcedureDeclaration(id, params, stmt);
+            Program prog = parseProgram();
+            prog.addProcedure(decl);
+            return prog;
+        }
+        else
+        {
+            Statement stmt = parseStatement();
+            return new Program(new ArrayList<>(), stmt);
         }
     }
 

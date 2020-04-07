@@ -27,7 +27,7 @@ public class Scanner
             "<", ">=", "<=", "(", ")"};
 
     // The special characters that are used in Pascal
-    static private char[] specialChars = {';'};
+    static private char[] specialChars = {';', ','};
 
     /**
      * Scanner constructor for construction of a scanner that uses an
