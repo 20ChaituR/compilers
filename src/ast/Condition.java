@@ -1,5 +1,6 @@
 package ast;
 
+import codegen.Emitter;
 import environment.Environment;
 
 /**
@@ -59,5 +60,41 @@ public class Condition
         }
 
         throw new IllegalArgumentException("Invalid boolean operator");
+    }
+
+    public void compile(Emitter e, String targetLabel)
+    {
+        exp1.compile(e);
+        e.emitPush("$v0");
+        exp2.compile(e);
+        e.emitPop("$t0");
+
+        switch (relop)
+        {
+            case "=":
+                e.emit("# Continue if t0 = v0");
+                e.emit("bne $t0 $v0 " + targetLabel + "\n");
+                break;
+            case "<>":
+                e.emit("# Continue if t0 != v0");
+                e.emit("beq $t0 $v0 " + targetLabel + "\n");
+                break;
+            case "<":
+                e.emit("# Continue if t0 < v0");
+                e.emit("bge $t0 $v0 " + targetLabel + "\n");
+                break;
+            case ">":
+                e.emit("# Continue if t0 > v0");
+                e.emit("ble $t0 $v0 " + targetLabel + "\n");
+                break;
+            case "<=":
+                e.emit("# Continue if t0 <= v0");
+                e.emit("bgt $t0 $v0 " + targetLabel + "\n");
+                break;
+            case ">=":
+                e.emit("# Continue if t0 >= v0");
+                e.emit("blt $t0 $v0 " + targetLabel + "\n");
+                break;
+        }
     }
 }

@@ -1,5 +1,6 @@
 package ast;
 
+import codegen.Emitter;
 import environment.Environment;
 
 /**
@@ -43,5 +44,20 @@ public class While extends Statement
         {
             stmt.exec(env);
         }
+    }
+
+    @Override
+    public void compile(Emitter e)
+    {
+        int labelID = e.nextLabelID();
+        String beginLabel = "beginwhile" + labelID;
+        String endLabel = "endwhile" + labelID;
+
+        e.emit(beginLabel + ":");
+        cond.compile(e, endLabel);
+        stmt.compile(e);
+        e.emit("j " + beginLabel);
+        e.emit(endLabel + ":");
+        e.emit("");
     }
 }

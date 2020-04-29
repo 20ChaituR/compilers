@@ -1,5 +1,6 @@
 package ast;
 
+import codegen.Emitter;
 import environment.Environment;
 
 /**
@@ -20,5 +21,10 @@ public abstract class Expression
      * @return the value of the expression
      */
     public abstract int eval(Environment env);
+
+    public void compile(Emitter e)
+    {
+        throw new RuntimeException("Not implemented");
+    }
 
 }

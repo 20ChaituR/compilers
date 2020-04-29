@@ -1,5 +1,6 @@
 package ast;
 
+import codegen.Emitter;
 import environment.Environment;
 
 /**
@@ -36,5 +37,13 @@ public class Variable extends Expression
     public int eval(Environment env)
     {
         return env.getVariable(name);
+    }
+
+    @Override
+    public void compile(Emitter e)
+    {
+        e.emit("# Puts " + name + " into v0");
+        e.emit("la $t0 var" + name);
+        e.emit("lw $v0 ($t0)\n");
     }
 }

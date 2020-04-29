@@ -1,5 +1,6 @@
 package ast;
 
+import codegen.Emitter;
 import environment.Environment;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 public class Program extends Statement
 {
 
+    private List<VariableDeclaration> variables;
     private List<ProcedureDeclaration> procedures;
     private Statement stmt;
 
@@ -28,8 +30,9 @@ public class Program extends Statement
      * @param procedures the declarations at the start
      * @param stmt       the statement to be run
      */
-    public Program(List<ProcedureDeclaration> procedures, Statement stmt)
+    public Program(List<VariableDeclaration> variables, List<ProcedureDeclaration> procedures, Statement stmt)
     {
+        this.variables = variables;
         this.procedures = procedures;
         this.stmt = stmt;
     }
@@ -45,6 +48,11 @@ public class Program extends Statement
         procedures.add(proc);
     }
 
+    public void addVariable(VariableDeclaration var)
+    {
+        variables.add(var);
+    }
+
     /**
      * This method executes the Program by declaring
      * the procedures, then executing the final Statement
@@ -54,10 +62,38 @@ public class Program extends Statement
     @Override
     public void exec(Environment env)
     {
+        for (VariableDeclaration var : variables)
+        {
+            var.exec(env);
+        }
         for (ProcedureDeclaration proc : procedures)
         {
             proc.exec(env);
         }
         stmt.exec(env);
+    }
+
+    public void compile(String fileName)
+    {
+        Emitter e = new Emitter(fileName);
+        e.emit(".text");
+        e.emit(".globl main");
+        e.emit("main:");
+
+        stmt.compile(e);
+
+        e.emit("# Halts the program");
+        e.emit("li $v0 10");
+        e.emit("syscall\n");
+
+        e.emit(".data");
+        e.emit("newline:");
+        e.emit(".asciiz \"\\n\"");
+
+        for (VariableDeclaration var : variables)
+        {
+            e.emit("var" + var.getID() + ":");
+            e.emit(".word 0");
+        }
     }
 }

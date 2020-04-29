@@ -1,5 +1,6 @@
 package ast;
 
+import codegen.Emitter;
 import environment.Environment;
 
 /**
@@ -35,5 +36,12 @@ public class Number extends Expression
     public int eval(Environment env)
     {
         return value;
+    }
+
+    @Override
+    public void compile(Emitter e)
+    {
+        e.emit("# Sets v0 to " + value);
+        e.emit("li $v0 " + value + "\n");
     }
 }

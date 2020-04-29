@@ -1,5 +1,6 @@
 package ast;
 
+import codegen.Emitter;
 import environment.Environment;
 
 /**
@@ -40,5 +41,14 @@ public class Assignment extends Statement
     public void exec(Environment env)
     {
         env.setVariable(var, exp.eval(env));
+    }
+
+    @Override
+    public void compile(Emitter e)
+    {
+        exp.compile(e);
+        e.emit("# Assigns v0 to " + var);
+        e.emit("la $t0 var" + var);
+        e.emit("sw $v0 ($t0)\n");
     }
 }

@@ -1,5 +1,6 @@
 package ast;
 
+import codegen.Emitter;
 import environment.Environment;
 
 import java.util.List;
@@ -50,6 +51,15 @@ public class Block extends Statement
         for (Statement stmt : stmts)
         {
             stmt.exec(env);
+        }
+    }
+
+    @Override
+    public void compile(Emitter e)
+    {
+        for (Statement stmt : stmts)
+        {
+            stmt.compile(e);
         }
     }
 }

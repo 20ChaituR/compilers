@@ -410,6 +410,25 @@ public class Parser
         }
     }
 
+    public List<String> parseVars()
+    {
+        String varName = parseID();
+        if (curToken.equals(","))
+        {
+            eat(",");
+            List<String> varNames = parseVars();
+            varNames.add(varName);
+            return varNames;
+        }
+        else
+        {
+            eat(";");
+            List<String> varNames = new ArrayList<>();
+            varNames.add(varName);
+            return varNames;
+        }
+    }
+
     /**
      * Parses a program, which consists of a series of procedure
      * declarations, then a statement that is run when the program
@@ -419,7 +438,15 @@ public class Parser
      */
     public Program parseProgram()
     {
-        if ("PROCEDURE".equals(curToken))
+        if ("VAR".equals(curToken))
+        {
+            eat("VAR");
+            List<String> varNames = parseVars();
+            Program prog = parseProgram();
+            prog.addVariables(varNames);
+            return prog;
+        }
+        else if ("PROCEDURE".equals(curToken))
         {
             eat("PROCEDURE");
             String id = parseID();
@@ -436,7 +463,7 @@ public class Parser
         else
         {
             Statement stmt = parseStatement();
-            return new Program(new ArrayList<>(), stmt);
+            return new Program(new ArrayList<>(), new ArrayList<>(), stmt);
         }
     }
 

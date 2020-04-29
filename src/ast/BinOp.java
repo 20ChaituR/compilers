@@ -1,5 +1,6 @@
 package ast;
 
+import codegen.Emitter;
 import environment.Environment;
 
 /**
@@ -57,5 +58,39 @@ public class BinOp extends Expression
                 return exp1.eval(env) % exp2.eval(env);
         }
         throw new IllegalArgumentException("Invalid binary operator");
+    }
+
+    @Override
+    public void compile(Emitter e)
+    {
+        exp1.compile(e);
+        e.emitPush("$v0");
+        exp2.compile(e);
+        e.emitPop("$t0");
+
+        switch (op)
+        {
+            case "+":
+                e.emit("# Adds t0 and v0");
+                e.emit("addu $v0 $t0 $v0\n");
+                break;
+            case "-":
+                e.emit("# Subtracts t0 and v0");
+                e.emit("subu $v0 $t0 $v0\n");
+                break;
+            case "*":
+                e.emit("# Multiplies t0 and v0");
+                e.emit("mulu $v0 $t0 $v0\n");
+                break;
+            case "/":
+                e.emit("# Divides t0 and v0");
+                e.emit("divu $v0 $t0 $v0\n");
+                break;
+            case "mod":
+                e.emit("# Finds t0 mod v0");
+                e.emit("divu $t0 $v0");
+                e.emit("mfhi $v0\n");
+                break;
+        }
     }
 }
