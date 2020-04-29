@@ -56,7 +56,7 @@ public class Emitter
      */
     public void emitPush(String reg)
     {
-        emit("# Pushes " + reg + " onto the stack");
+        emit("# Pushes " + reg.substring(1) + " onto the stack");
         emit("subu $sp $sp 4");
         emit("sw " + reg + " ($sp)\n");
     }
@@ -69,7 +69,7 @@ public class Emitter
      */
     public void emitPop(String reg)
     {
-        emit("# Pops stack onto " + reg);
+        emit("# Pops stack onto " + reg.substring(1));
         emit("lw " + reg + " ($sp)");
         emit("addu $sp $sp 4\n");
     }

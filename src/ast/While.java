@@ -64,6 +64,8 @@ public class While extends Statement
         e.emit(beginLabel + ":");
         cond.compile(e, endLabel);
         stmt.compile(e);
+
+        e.emit("# Jumps to " + beginLabel);
         e.emit("j " + beginLabel);
         e.emit(endLabel + ":");
         e.emit("");

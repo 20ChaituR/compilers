@@ -80,27 +80,27 @@ public class Condition
         switch (relop)
         {
             case "=":
-                e.emit("# Continue if t0 = v0");
+                e.emit("# If t0 != v0 go to " + targetLabel);
                 e.emit("bne $t0 $v0 " + targetLabel + "\n");
                 break;
             case "<>":
-                e.emit("# Continue if t0 != v0");
+                e.emit("# If t0 = v0 go to " + targetLabel);
                 e.emit("beq $t0 $v0 " + targetLabel + "\n");
                 break;
             case "<":
-                e.emit("# Continue if t0 < v0");
+                e.emit("# If t0 >= v0 go to " + targetLabel);
                 e.emit("bge $t0 $v0 " + targetLabel + "\n");
                 break;
             case ">":
-                e.emit("# Continue if t0 > v0");
+                e.emit("# If t0 <= v0 go to " + targetLabel);
                 e.emit("ble $t0 $v0 " + targetLabel + "\n");
                 break;
             case "<=":
-                e.emit("# Continue if t0 <= v0");
+                e.emit("# If t0 > v0 go to " + targetLabel);
                 e.emit("bgt $t0 $v0 " + targetLabel + "\n");
                 break;
             case ">=":
-                e.emit("# Continue if t0 >= v0");
+                e.emit("# If t0 < v0 go to " + targetLabel);
                 e.emit("blt $t0 $v0 " + targetLabel + "\n");
                 break;
         }
