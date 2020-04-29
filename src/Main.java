@@ -15,7 +15,7 @@ public class Main
 
     public static void main(String[] args) throws IOException
     {
-        Scanner lex = new Scanner(new FileInputStream("tests/parserTest9.txt"));
+        Scanner lex = new Scanner(new FileInputStream("input.txt"));
         Parser p = new Parser(lex);
 
         Environment mainEnv = new Environment(new HashMap<>(), new HashMap<>(), null);

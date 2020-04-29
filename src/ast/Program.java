@@ -17,7 +17,7 @@ import java.util.List;
 public class Program extends Statement
 {
 
-    private List<VariableDeclaration> variables;
+    private List<String> variableNames;
     private List<ProcedureDeclaration> procedures;
     private Statement stmt;
 
@@ -30,9 +30,9 @@ public class Program extends Statement
      * @param procedures the declarations at the start
      * @param stmt       the statement to be run
      */
-    public Program(List<VariableDeclaration> variables, List<ProcedureDeclaration> procedures, Statement stmt)
+    public Program(List<String> variableNames, List<ProcedureDeclaration> procedures, Statement stmt)
     {
-        this.variables = variables;
+        this.variableNames = variableNames;
         this.procedures = procedures;
         this.stmt = stmt;
     }
@@ -48,9 +48,9 @@ public class Program extends Statement
         procedures.add(proc);
     }
 
-    public void addVariable(VariableDeclaration var)
+    public void addVariables(List<String> newVariables)
     {
-        variables.add(var);
+        variableNames.addAll(newVariables);
     }
 
     /**
@@ -62,9 +62,9 @@ public class Program extends Statement
     @Override
     public void exec(Environment env)
     {
-        for (VariableDeclaration var : variables)
+        for (String var : variableNames)
         {
-            var.exec(env);
+            env.declareVariable(var, 0);
         }
         for (ProcedureDeclaration proc : procedures)
         {
@@ -90,9 +90,9 @@ public class Program extends Statement
         e.emit("newline:");
         e.emit(".asciiz \"\\n\"");
 
-        for (VariableDeclaration var : variables)
+        for (String var : variableNames)
         {
-            e.emit("var" + var.getID() + ":");
+            e.emit("var" + var + ":");
             e.emit(".word 0");
         }
     }

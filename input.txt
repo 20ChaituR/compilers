@@ -1,7 +1,6 @@
-VAR count;
+VAR x, y;
 BEGIN
-count := 1;
-WHILE count <= 15 DO BEGIN
-        WRITELN(count);
-count := count + 1; END;
-END; .
+x := 3;
+y := 2 * x;
+     WRITELN(x + y);
+   END;
