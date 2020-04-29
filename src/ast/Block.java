@@ -54,6 +54,12 @@ public class Block extends Statement
         }
     }
 
+    /**
+     * This method compiles the Block statement by compiling
+     * each statement within the block.
+     *
+     * @param e the emitter for the generated code
+     */
     @Override
     public void compile(Emitter e)
     {

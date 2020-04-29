@@ -43,6 +43,13 @@ public class Assignment extends Statement
         env.setVariable(var, exp.eval(env));
     }
 
+    /**
+     * This method compiles the Assignment statement by first
+     * compiling the expression, then storing the value of that
+     * expression in the variable.
+     *
+     * @param e the emitter for the generated code
+     */
     @Override
     public void compile(Emitter e)
     {

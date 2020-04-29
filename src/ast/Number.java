@@ -27,7 +27,7 @@ public class Number extends Expression
     }
 
     /**
-     * This method returns the value of the number
+     * This method returns the value of the number.
      *
      * @param env the environment for the variables
      * @return the value of the number
@@ -38,6 +38,12 @@ public class Number extends Expression
         return value;
     }
 
+    /**
+     * This method compiles the Number statement
+     * by setting v0 to the value of the number.
+     *
+     * @param e the emitter for the generated code
+     */
     @Override
     public void compile(Emitter e)
     {

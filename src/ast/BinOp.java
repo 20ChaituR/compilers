@@ -60,6 +60,14 @@ public class BinOp extends Expression
         throw new IllegalArgumentException("Invalid binary operator");
     }
 
+    /**
+     * This method compiles the BinOp statement by compiling
+     * the first expression, pushing its value to the stack,
+     * compiling the second expression, then applying the
+     * operator to the two values.
+     *
+     * @param e the emitter for the generated code
+     */
     @Override
     public void compile(Emitter e)
     {

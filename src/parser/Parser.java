@@ -22,7 +22,6 @@ import static scanner.Scanner.isDigit;
  * Usage:
  * Create a new Parser by passing a Scanner object
  * Read and generate an AST with the parseProgram() method
- * Execute that AST using the exec() method
  */
 public class Parser
 {
@@ -319,9 +318,7 @@ public class Parser
             String id = parseID();
             eat(")");
             eat(";");
-            System.out.println("Enter a number: ");
-            int val = consoleIn.nextInt();
-            return new Readln(id, val);
+            return new Readln(id, consoleIn);
         }
         else if ("BEGIN".equals(curToken))
         {
@@ -410,6 +407,12 @@ public class Parser
         }
     }
 
+    /**
+     * Parses a comma separated list of variables,
+     * consisting of one or more variable names.
+     *
+     * @return a list of variable names
+     */
     public List<String> parseVars()
     {
         String varName = parseID();
@@ -430,9 +433,9 @@ public class Parser
     }
 
     /**
-     * Parses a program, which consists of a series of procedure
-     * declarations, then a statement that is run when the program
-     * is executed.
+     * Parses a program, which consists of a series of variable
+     * declarations, then a series of procedure declarations,
+     * then a statement that is run when the program is executed.
      *
      * @return the AST representation of the program
      */

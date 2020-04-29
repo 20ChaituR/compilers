@@ -39,6 +39,12 @@ public class Variable extends Expression
         return env.getVariable(name);
     }
 
+    /**
+     * This method compiles the Variable statement
+     * by loading the variable into v0.
+     *
+     * @param e the emitter for the generated code
+     */
     @Override
     public void compile(Emitter e)
     {

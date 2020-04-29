@@ -46,6 +46,14 @@ public class While extends Statement
         }
     }
 
+    /**
+     * This method compiles the While statement by first emitting
+     * the beginWhile label, then compiling the Condition, then
+     * compiling the Statement in the While, then emitting a jump
+     * back to the start, then emitting the endWhile label.
+     *
+     * @param e the emitter for the generated code
+     */
     @Override
     public void compile(Emitter e)
     {

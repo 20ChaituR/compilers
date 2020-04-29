@@ -38,6 +38,12 @@ public class Writeln extends Statement
         System.out.println(exp.eval(env));
     }
 
+    /**
+     * This method compiles the Writeln statement by
+     * printing v0, then printing a newline character.
+     *
+     * @param e the emitter for the generated code
+     */
     @Override
     public void compile(Emitter e)
     {

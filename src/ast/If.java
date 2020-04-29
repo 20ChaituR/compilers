@@ -47,6 +47,13 @@ public class If extends Statement
         }
     }
 
+    /**
+     * This method compiles the If statement by
+     * compiling the condition, then the statement
+     * within the If, then emitting the end label.
+     *
+     * @param e the emitter for the generated code
+     */
     @Override
     public void compile(Emitter e)
     {

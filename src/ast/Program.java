@@ -23,12 +23,14 @@ public class Program extends Statement
 
     /**
      * Program constructor that consists of a
+     * List of Strings for the variable names, a
      * List of ProcedureDeclarations for the
      * procedures and a Statement for the final
      * statement to be run.
      *
-     * @param procedures the declarations at the start
-     * @param stmt       the statement to be run
+     * @param variableNames the names of the variables
+     * @param procedures    the declarations at the start
+     * @param stmt          the statement to be run
      */
     public Program(List<String> variableNames, List<ProcedureDeclaration> procedures, Statement stmt)
     {
@@ -48,6 +50,11 @@ public class Program extends Statement
         procedures.add(proc);
     }
 
+    /**
+     * Adds a list of variables to the variable names
+     *
+     * @param newVariables the variables to be added
+     */
     public void addVariables(List<String> newVariables)
     {
         variableNames.addAll(newVariables);
@@ -55,7 +62,8 @@ public class Program extends Statement
 
     /**
      * This method executes the Program by declaring
-     * the procedures, then executing the final Statement
+     * the variables, then declaring the procedures,
+     * then executing the final Statement
      *
      * @param env the environment for the variables
      */
@@ -73,6 +81,14 @@ public class Program extends Statement
         stmt.exec(env);
     }
 
+    /**
+     * This method compiles the Program statement by
+     * first emitting the start of the file, then
+     * compiling the statement, then compiling all of
+     * the variables.
+     *
+     * @param fileName the target file for the emitter
+     */
     public void compile(String fileName)
     {
         Emitter e = new Emitter(fileName);
@@ -95,5 +111,7 @@ public class Program extends Statement
             e.emit("var" + var + ":");
             e.emit(".word 0");
         }
+
+        e.close();
     }
 }

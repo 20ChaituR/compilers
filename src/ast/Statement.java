@@ -22,6 +22,12 @@ public abstract class Statement
      */
     public abstract void exec(Environment env);
 
+    /**
+     * This method compiles the statement, writing out
+     * the MIPS code using given Emitter.
+     *
+     * @param e the emitter for the generated code
+     */
     public void compile(Emitter e)
     {
         throw new RuntimeException("Not implemented");

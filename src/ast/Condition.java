@@ -62,6 +62,14 @@ public class Condition
         throw new IllegalArgumentException("Invalid boolean operator");
     }
 
+    /**
+     * This method compiles the Condition statement by compiling
+     * the two Expressions, then jumping to the target label if
+     * the comparison of the expressions using the relop is false.
+     *
+     * @param e           the emitter for the generated code
+     * @param targetLabel the label to jump to if the condition is false
+     */
     public void compile(Emitter e, String targetLabel)
     {
         exp1.compile(e);
