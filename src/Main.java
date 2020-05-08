@@ -15,11 +15,11 @@ public class Main
 
     public static void main(String[] args) throws IOException
     {
-        Scanner lex = new Scanner(new FileInputStream("input.txt"));
+        Scanner lex = new Scanner(new FileInputStream("tests/parserTest13.txt"));
         Parser p = new Parser(lex);
 
         Environment mainEnv = new Environment(new HashMap<>(), new HashMap<>(), null);
-        p.parseProgram().compile("output.txt");
+        p.parseProgram().compile("output.asm");
     }
 
 }

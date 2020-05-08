@@ -55,7 +55,15 @@ public class Assignment extends Statement
     {
         exp.compile(e);
         e.emit("# Assigns v0 to " + var);
-        e.emit("la $t0 var" + var);
-        e.emit("sw $v0 ($t0)\n");
+        if (e.isLocalVariable(var))
+        {
+            int offset = e.getOffset(var);
+            e.emit("sw $v0 " + offset + "($sp)\n");
+        }
+        else
+        {
+            e.emit("la $t0 var" + var);
+            e.emit("sw $v0 ($t0)\n");
+        }
     }
 }

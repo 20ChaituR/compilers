@@ -1,6 +1,7 @@
-BEGIN
 	VAR x;
-	VAR y;
+	VAR y, count;
+BEGIN
+
 	x := 2;
 	y := x + 1;
 	x := x + y;
@@ -18,8 +19,6 @@ BEGIN
      	END;
      	IF 15 > 14 THEN WRITELN(5);
    	END;
-
-	VAR count;
    	BEGIN
      		count := 1;
      		WHILE count <= 15 DO

@@ -3,6 +3,9 @@ package ast;
 import codegen.Emitter;
 import environment.Environment;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -14,7 +17,7 @@ import java.util.List;
  * @author Chaitanya Ravuri
  * @version April 7, 2020
  */
-public class Program extends Statement
+public class Program
 {
 
     private List<String> variableNames;
@@ -67,7 +70,6 @@ public class Program extends Statement
      *
      * @param env the environment for the variables
      */
-    @Override
     public void exec(Environment env)
     {
         for (String var : variableNames)
@@ -92,8 +94,14 @@ public class Program extends Statement
     public void compile(String fileName)
     {
         Emitter e = new Emitter(fileName);
+        e.emit("# @author Chaitu Ravuri");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        LocalDateTime now = LocalDateTime.now();
+        e.emit("# @version " + dtf.format(now));
+        e.emit("");
+
         e.emit(".text");
-        e.emit(".globl main");
+        e.emit(".globl main\n");
         e.emit("main:");
 
         stmt.compile(e);
@@ -101,6 +109,11 @@ public class Program extends Statement
         e.emit("# Halts the program");
         e.emit("li $v0 10");
         e.emit("syscall\n");
+
+        for (ProcedureDeclaration proc : procedures)
+        {
+            proc.compile(e);
+        }
 
         e.emit(".data");
         e.emit("newline:");

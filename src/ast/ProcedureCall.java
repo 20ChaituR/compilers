@@ -1,5 +1,6 @@
 package ast;
 
+import codegen.Emitter;
 import environment.Environment;
 
 import java.util.HashMap;
@@ -56,5 +57,31 @@ public class ProcedureCall extends Expression
 
         decl.getBody().exec(procedureEnv);
         return procedureEnv.getVariable(id);
+    }
+
+    @Override
+    public void compile(Emitter e)
+    {
+        e.emitPush("$ra");
+
+        for (Expression exp : args)
+        {
+            exp.compile(e);
+            e.emitPush("$v0");
+        }
+
+        e.emitPush("$zero");
+
+        e.emit("# Jumps to procedure " + id);
+        e.emit("jal proc" + id + "\n");
+
+        e.emitPop("$v0");
+
+        for (Expression exp : args)
+        {
+            e.emitPop("$t0");
+        }
+
+        e.emitPop("$ra");
     }
 }

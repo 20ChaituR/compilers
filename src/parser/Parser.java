@@ -457,8 +457,14 @@ public class Parser
             List<String> params = parseParams();
             eat(")");
             eat(";");
+            List<String> localVars = new ArrayList<>();
+            while ("VAR".equals(curToken))
+            {
+                eat("VAR");
+                localVars.addAll(parseVars());
+            }
             Statement stmt = parseStatement();
-            ProcedureDeclaration decl = new ProcedureDeclaration(id, params, stmt);
+            ProcedureDeclaration decl = new ProcedureDeclaration(id, params, localVars, stmt);
             Program prog = parseProgram();
             prog.addProcedure(decl);
             return prog;

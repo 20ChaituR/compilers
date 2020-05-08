@@ -1,17 +1,15 @@
-VAR a, b, c, n, i;
+
+   VAR count, ignore, times;
+   PROCEDURE printSquares(low, high);
+   VAR count, square;
+   BEGIN
+count := low;
+WHILE count <= high DO BEGIN
+square := count * count; WRITELN(square);
+count := count + 1; times := times + 1;
+END; END;
 BEGIN
-    READLN(n);
-    a := 0;
-    b := 1;
-    IF n = 0 THEN WRITELN(a);
-    IF n = 1 THEN WRITELN(b);
-    i := 1;
-    WHILE i < n DO
-    BEGIN
-        c := a + b;
-        a := b;
-        b := c;
-        i := i + 1;
-    END;
-    WRITELN(c);
+count := 196;
+times := 0;
+ignore := printSquares(10, 13); WRITELN(count); WRITELN(times);
 END;

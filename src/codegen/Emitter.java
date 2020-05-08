@@ -1,8 +1,11 @@
 package codegen;
 
+import ast.ProcedureDeclaration;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * The Emitter class helps write MIPS code
@@ -15,6 +18,9 @@ public class Emitter
 {
     private PrintWriter out;
     private int labelID = 0;
+
+    private ProcedureDeclaration currentContext = null;
+    private int excessStackHeight = 0;
 
     /**
      * Emitter constructor that creates
@@ -59,6 +65,7 @@ public class Emitter
         emit("# Pushes " + reg.substring(1) + " onto the stack");
         emit("subu $sp $sp 4");
         emit("sw " + reg + " ($sp)\n");
+        excessStackHeight += 4;
     }
 
     /**
@@ -72,6 +79,7 @@ public class Emitter
         emit("# Pops stack onto " + reg.substring(1));
         emit("lw " + reg + " ($sp)");
         emit("addu $sp $sp 4\n");
+        excessStackHeight -= 4;
     }
 
     /**
@@ -83,6 +91,96 @@ public class Emitter
     public int nextLabelID()
     {
         return labelID++;
+    }
+
+    /**
+     * Remember proc as current procedure
+     * context
+     *
+     * @param proc the current context
+     */
+    public void setProcedureContext(ProcedureDeclaration proc)
+    {
+        currentContext = proc;
+        excessStackHeight = 0;
+    }
+
+    /**
+     * Clear current procedure context
+     * (remember null)
+     */
+    public void clearProcedureContext()
+    {
+        currentContext = null;
+    }
+
+    /**
+     * Checks if the given variable is a
+     * local variable to the current context
+     *
+     * @param varName the given variable
+     * @return whether it is local
+     */
+    public boolean isLocalVariable(String varName)
+    {
+        if (currentContext == null)
+        {
+            return false;
+        }
+        if (currentContext.getID().equals(varName))
+        {
+            return true;
+        }
+        for (String param : currentContext.getParams())
+        {
+            if (param.equals(varName))
+            {
+                return true;
+            }
+        }
+        for (String param : currentContext.getLocalVars())
+        {
+            if (param.equals(varName))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Gets the offset from the stack pointer
+     * for the given variable.
+     *
+     * @param localVarName the variable to find
+     * @return its position on the stack
+     * @precondition localVarName is the name of
+     * a local variable for the procedure currently
+     * being compiled
+     */
+    public int getOffset(String localVarName)
+    {
+        List<String> localVars = currentContext.getLocalVars();
+        for (int i = 0; i < localVars.size(); i++)
+        {
+            if (localVars.get(i).equals(localVarName))
+            {
+                return 4 * (localVars.size() - i - 1) + excessStackHeight;
+            }
+        }
+        if (currentContext.getID().equals(localVarName))
+        {
+            return 4 * localVars.size() + excessStackHeight;
+        }
+        List<String> params = currentContext.getParams();
+        for (int i = 0; i < params.size(); i++)
+        {
+            if (params.get(i).equals(localVarName))
+            {
+                return 4 * (params.size() - i) + 4 * localVars.size() + excessStackHeight;
+            }
+        }
+        throw new IllegalArgumentException("Not a local variable.");
     }
 
     /**

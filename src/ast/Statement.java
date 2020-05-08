@@ -28,9 +28,6 @@ public abstract class Statement
      *
      * @param e the emitter for the generated code
      */
-    public void compile(Emitter e)
-    {
-        throw new RuntimeException("Not implemented");
-    }
+    public abstract void compile(Emitter e);
 
 }
